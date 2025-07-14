@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>msnWP Agent - AI Content Publisher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .loader {
+            border: 4px solid #4a5568; /* gray-700 */
+            border-top: 4px solid #22d3ee; /* cyan-400 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Styles for generated content */
+        .prose p { margin-bottom: 1rem; }
+        .prose h2 { font-size: 1.5em; font-weight: 600; margin-top: 1.5rem; margin-bottom: 1rem; }
+        .prose h3 { font-size: 1.25em; font-weight: 600; margin-top: 1.25rem; margin-bottom: 1rem; }
+        .prose ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose-invert { color: #d1d5db; } /* Invert prose for dark mode */
+        .prose-invert h2, .prose-invert h3 { color: #fff; }
+        .prose-invert a { color: #67e8f9; }
+        .prose-invert ul { color: #d1d5db; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 relative z-10">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-cyan-400">msnWP Agent</h1>
+            <p class="text-gray-400 mt-2">আপনার WordPress ওয়েবসাইটের জন্য AI কনটেন্ট সহকারী।</p>
+        </header>
+
+        <main>
+            <!-- Step 1: Credentials -->
+            <div id="step1" class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2 text-white">ধাপ ১: প্রয়োজনীয় তথ্য দিন</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="wp-url" class="block text-sm font-medium text-gray-300 mb-1">ওয়েবসাইটের ঠিকানা (URL)</label>
+                        <input type="url" id="wp-url" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="https://example.com">
+                    </div>
+                    <div>
+                        <label for="wp-user" class="block text-sm font-medium text-gray-300 mb-1">WordPress ইউজারনেম</label>
+                        <input type="text" id="wp-user" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="admin">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label for="wp-password" class="block text-sm font-medium text-gray-300 mb-1">অ্যাপ্লিকেশন পাসওয়ার্ড (Application Password)</label>
+                    <input type="password" id="wp-password" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="xxxx xxxx xxxx xxxx">
+                    <p class="text-xs text-gray-500 mt-2">
+                        <strong>কীভাবে অ্যাপ্লিকেশন পাসওয়ার্ড পাবেন?</strong>
+                        আপনার WordPress ড্যাশবোর্ডে যান > Users > Profile > 'Application Passwords' সেকশনে একটি নতুন পাসওয়ার্ড তৈরি করুন।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 2: Prompt -->
+            <div id="step2" class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2 text-white">ধাপ ২: কনটেন্টের টপিক লিখুন</h2>
+                <div>
+                    <label for="prompt" class="block text-sm font-medium text-gray-300 mb-1">আপনার পোস্টের বিষয়</label>
+                    <textarea id="prompt" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="যেমন: বাংলাদেশে ডিজিটাল মার্কেটিং এর ভবিষ্যৎ"></textarea>
+                </div>
+                <button id="generate-btn" class="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+                    কনটেন্ট তৈরি করুন
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="hidden text-center my-8">
+                <div class="loader inline-block"></div>
+                <p class="mt-4 text-lg text-gray-400">আপনার কনটেন্ট ও ছবি তৈরি করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।</p>
+            </div>
+            
+            <!-- Message Area -->
+            <div id="message-area" class="hidden my-4 p-4 rounded-md text-center"></div>
+
+            <!-- Step 3: Review and Publish -->
+            <div id="step3" class="hidden bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2 text-white">ধাপ ৩: রিভিউ এবং পাবলিশ করুন</h2>
+                
+                <div class="mb-4">
+                    <label for="post-title" class="block text-sm font-medium text-gray-300 mb-1">পোস্টের টাইটেল</label>
+                    <input type="text" id="post-title" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">জেনারেট হওয়া ছবি</label>
+                    <div id="image-container" class="w-full h-64 bg-gray-700 rounded-md flex items-center justify-center border border-gray-600 text-center p-4">
+                        <p id="image-placeholder" class="text-gray-500">ছবি লোড হচ্ছে...</p>
+                        <img id="post-image" src="" alt="Generated Image" class="hidden max-h-full max-w-full rounded-md">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="post-content" class="block text-sm font-medium text-gray-300 mb-1">আর্টিকেল</label>
+                    <div id="post-content-editor" contenteditable="true" class="w-full h-96 bg-gray-700 border border-gray-600 rounded-md p-4 text-white overflow-y-auto prose prose-invert max-w-none"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="post-tags" class="block text-sm font-medium text-gray-300 mb-1">ট্যাগ (কমা দিয়ে আলাদা করুন)</label>
+                        <input type="text" id="post-tags" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                    </div>
+                    <div>
+                        <label for="post-categories" class="block text-sm font-medium text-gray-300 mb-1">ক্যাটাগরি (কমা দিয়ে আলাদা করুন)</label>
+                        <input type="text" id="post-categories" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                    </div>
+                </div>
+
+                <button id="publish-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    WordPress-এ পাবলিশ করুন
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-4xl mx-auto text-center py-8 px-4 text-gray-500 text-sm relative z-10">
+        <div class="border-t border-gray-700 pt-6">
+            <p>Created By <a href="https://msncloud.net/" target="_blank" class="text-cyan-400 hover:underline">msncloud.net</a></p>
+            <p>Development By <a href="https://www.facebook.com/TunerHimu" target="_blank" class="text-cyan-400 hover:underline">TunerHimu</a></p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="https://www.facebook.com/TunerHimu" target="_blank" aria-label="Facebook" class="hover:text-cyan-400 transition">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/8801680013168" target="_blank" class="fixed bottom-5 right-5 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-transform transform hover:scale-110 z-20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 4.315 1.731 6.086l.474.854-1.12 4.112 4.224-1.104.826.494z"/></svg>
+    </a>
+
+    <script>
+        // --- Application Logic ---
+
+        // DOM Elements
+        const generateBtn = document.getElementById('generate-btn');
+        const publishBtn = document.getElementById('publish-btn');
+        const loadingDiv = document.getElementById('loading');
+        const step3Div = document.getElementById('step3');
+        const messageArea = document.getElementById('message-area');
+
+        // Input fields
+        const wpUrlInput = document.getElementById('wp-url');
+        const wpUserInput = document.getElementById('wp-user');
+        const wpPasswordInput = document.getElementById('wp-password');
+        const promptInput = document.getElementById('prompt');
+
+        // Output fields
+        const postTitleInput = document.getElementById('post-title');
+        const postImage = document.getElementById('post-image');
+        const imageContainer = document.getElementById('image-container');
+        const imagePlaceholder = document.getElementById('image-placeholder');
+        const postContentEditor = document.getElementById('post-content-editor');
+        const postTagsInput = document.getElementById('post-tags');
+        const postCategoriesInput = document.getElementById('post-categories');
+        
+        const geminiApiKey = "AIzaSyCQeYsYHGit5oYBsOZ_ciLlOIhFsvuxe4o"; // Gemini API Key
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGenerateContent);
+        publishBtn.addEventListener('click', handlePublishPost);
+
+        // --- Functions ---
+
+        function showMessage(html, type = 'info') {
+            messageArea.innerHTML = html;
+            messageArea.className = 'my-4 p-4 rounded-md text-center'; // Reset classes
+            messageArea.classList.remove('hidden');
+            if (type === 'success') {
+                messageArea.classList.add('bg-green-200', 'text-green-800');
+            } else if (type === 'error') {
+                messageArea.classList.add('bg-red-200', 'text-red-800');
+            } else {
+                messageArea.classList.add('bg-blue-200', 'text-blue-800');
+            }
+            messageArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function validateInputs() {
+            if (!wpUrlInput.value || !wpUserInput.value || !wpPasswordInput.value || !promptInput.value) {
+                showMessage('অনুগ্রহ করে WordPress সাইটের তথ্য এবং কনটেন্টের টপিক পূরণ করুন।', 'error');
+                return false;
+            }
+            try {
+                new URL(wpUrlInput.value);
+            } catch (e) {
+                showMessage('অনুগ্রহ করে সঠিক ওয়েবসাইটের ঠিকানা (URL) দিন।', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        async function handleGenerateContent() {
+            if (!validateInputs()) return;
+
+            loadingDiv.classList.remove('hidden');
+            step3Div.classList.add('hidden');
+            messageArea.classList.add('hidden');
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                showMessage('কনটেন্ট এবং ছবি তৈরি করা হচ্ছে...', 'info');
+                
+                const textData = await generateTextContent(promptInput.value);
+                const imageResult = await generateImageWithAi(textData.title);
+
+                postTitleInput.value = textData.title;
+                postContentEditor.innerHTML = textData.content;
+                postTagsInput.value = textData.tags;
+                postCategoriesInput.value = textData.categories;
+                
+                if (imageResult.success) {
+                    postImage.src = imageResult.url;
+                    postImage.classList.remove('hidden');
+                    imagePlaceholder.classList.add('hidden');
+                    messageArea.classList.add('hidden'); 
+                } else {
+                    showMessage(imageResult.error, 'error');
+                    imagePlaceholder.textContent = `ছবি তৈরি করা যায়নি। ত্রুটি: ${imageResult.error}`;
+                    postImage.classList.add('hidden');
+                    imagePlaceholder.classList.remove('hidden');
+                }
+
+                step3Div.classList.remove('hidden');
+                step3Div.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error generating content:', error);
+                showMessage(`কনটেন্ট তৈরিতে সমস্যা হয়েছে: ${error.message}`, 'error');
+            } finally {
+                loadingDiv.classList.add('hidden');
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        async function generateTextContent(userPrompt) {
+            const systemPrompt = `You are a helpful assistant for creating blog posts for a Bengali audience. Based on the following topic, please generate a complete blog post in Bengali. The post should be well-structured, engaging, and informative. The blog post content must be in HTML format, using paragraphs (<p>), headings (<h2>, <h3>), and lists (<ul>, <li>) where appropriate. Also, provide a catchy Bengali title, 5 to 7 relevant tags (as a comma-separated string in Bengali), and 1 or 2 relevant categories (as a comma-separated string in Bengali).
+
+Topic: "${userPrompt}"
+
+Please provide the output in JSON format according to the specified schema.`;
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "title": { "type": "STRING" },
+                            "content": { "type": "STRING" },
+                            "tags": { "type": "STRING" },
+                            "categories": { "type": "STRING" }
+                        },
+                        required: ["title", "content", "tags", "categories"]
+                    }
+                }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`Text generation failed with status ${response.status}: ${errorBody}`);
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0) {
+                 const text = result.candidates[0].content.parts[0].text;
+                 return JSON.parse(text);
+            } else {
+                throw new Error("No text content was generated.");
+            }
+        }
+        
+        async function generateImageWithAi(prompt) {
+            const imagePrompt = `High-quality blog post header image about "${prompt}". Photorealistic, vibrant colors, professional, digital art, high detail.`;
+            const payload = { 
+                instances: [{ prompt: imagePrompt }],
+                parameters: { sampleCount: 1 } 
+            };
+            
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json().catch(() => response.text());
+                    const errorMessage = errorBody?.error?.message || JSON.stringify(errorBody) || 'একটি অজানা সমস্যা হয়েছে।';
+                    return { success: false, error: errorMessage };
+                }
+                
+                const result = await response.json();
+                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    return { success: true, url: imageUrl };
+                } else {
+                    return { success: false, error: 'AI মডেল থেকে কোনো ছবি পাওয়া যায়নি।' };
+                }
+
+            } catch (e) {
+                console.error("AI Image Generation Error:", e);
+                return { success: false, error: 'AI ইমেজ জেনারেশন সার্ভিসের সাথে সংযোগ করতে সমস্যা হয়েছে।' };
+            }
+        }
+
+
+        async function handlePublishPost() {
+            publishBtn.disabled = true;
+            publishBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            showMessage('পোস্ট পাবলিশ করা হচ্ছে...', 'info');
+
+            const siteUrl = wpUrlInput.value.replace(/\/$/, "");
+            const user = wpUserInput.value;
+            const pass = wpPasswordInput.value;
+            const authString = btoa(unescape(encodeURIComponent(`${user}:${pass}`)));
+            const headers = {
+                'Authorization': `Basic ${authString}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                let mediaId = null;
+                if (postImage.src && postImage.src.startsWith('data:image')) {
+                    showMessage('ছবি আপলোড করা হচ্ছে...', 'info');
+                    
+                    const imageBlob = await fetch(postImage.src).then(res => res.blob());
+
+                    const mediaHeaders = {
+                        'Authorization': `Basic ${authString}`,
+                        'Content-Type': imageBlob.type || 'image/png',
+                        'Content-Disposition': `attachment; filename="ai-generated-${Date.now()}.png"`
+                    };
+                    const mediaResponse = await fetch(`${siteUrl}/wp-json/wp/v2/media`, {
+                        method: 'POST',
+                        headers: mediaHeaders,
+                        body: imageBlob
+                    });
+
+                    if (!mediaResponse.ok) throw new Error(`ছবি আপলোড করা যায়নি: ${await mediaResponse.text()}`);
+                    const mediaData = await mediaResponse.json();
+                    mediaId = mediaData.id;
+                }
+
+                showMessage('ট্যাগ এবং ক্যাটাগরি তৈরি করা হচ্ছে...', 'info');
+                const tagIds = await handleTaxonomy(siteUrl, headers, 'tags', postTagsInput.value);
+                const categoryIds = await handleTaxonomy(siteUrl, headers, 'categories', postCategoriesInput.value);
+
+                showMessage('পোস্ট তৈরি করা হচ্ছে...', 'info');
+                const postData = {
+                    title: postTitleInput.value,
+                    content: postContentEditor.innerHTML,
+                    status: 'publish',
+                    tags: tagIds,
+                    categories: categoryIds,
+                    ...(mediaId && { featured_media: mediaId })
+                };
+
+                const postResponse = await fetch(`${siteUrl}/wp-json/wp/v2/posts`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(postData)
+                });
+
+                if (!postResponse.ok) throw new Error(`পোস্ট তৈরি করা যায়নি: ${await postResponse.text()}`);
+                
+                const newPost = await postResponse.json();
+                showMessage(`পোস্ট সফলভাবে পাবলিশ হয়েছে! <a href="${newPost.link}" target="_blank" class="font-bold underline">পোস্টটি দেখুন</a>`, 'success');
+                
+                promptInput.value = '';
+                step3Div.classList.add('hidden');
+
+            } catch (error) {
+                console.error('Publishing error:', error);
+                showMessage(`একটি ত্রুটি ঘটেছে: ${error.message}`, 'error');
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        async function handleTaxonomy(siteUrl, headers, type, commaSeparatedTerms) {
+            const terms = commaSeparatedTerms.split(',').map(t => t.trim()).filter(Boolean);
+            if (terms.length === 0) return [];
+
+            const termIds = [];
+            for (const term of terms) {
+                try {
+                    const searchResponse = await fetch(`${siteUrl}/wp-json/wp/v2/${type}?search=${encodeURIComponent(term)}`, { headers });
+                    const existingTerms = await searchResponse.json();
+                    let termId = existingTerms.find(t => t.name.toLowerCase() === term.toLowerCase())?.id;
+
+                    if (!termId) {
+                        const createResponse = await fetch(`${siteUrl}/wp-json/wp/v2/${type}`, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify({ name: term })
+                        });
+                        const data = await createResponse.json();
+                        if (createResponse.ok) {
+                            termId = data.id;
+                        } else if (data.code === 'term_exists') {
+                            termId = data.data.term_id;
+                        } else {
+                           console.warn(`Could not create ${type} '${term}':`, data.message);
+                        }
+                    }
+                    if(termId) termIds.push(termId);
+
+                } catch (e) {
+                    console.error(`Error handling taxonomy ${type}:`, e);
+                }
+            }
+            return termIds;
+        }
+
+    </script>
+</body>
+</html>
